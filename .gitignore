@@ -27,3 +27,9 @@ go.sum
 
 # Windows specific files
 Thumbs.db
+
+# Exclude environment variables file which may contain sensitive data
+config/config.env
+
+# Exclude the generated certificate signing request file
+config/CertificateSigningRequest.certSigningRequest
