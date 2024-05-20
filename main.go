@@ -20,6 +20,8 @@ func main() {
 	// Setup routes
 	routes.Setup(router)
 
+    GenerateReadme(router) // Generate README.md file
+
     port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000" // Default port for development

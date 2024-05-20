@@ -1,69 +1,64 @@
-// routes.go
 package routes
 
 import (
     "net/http"
-    "strings"
 
+    "github.com/gin-gonic/gin"
     "github.com/jalong4/stock-service-go/auth"
     "github.com/jalong4/stock-service-go/config"
-    "github.com/gin-gonic/gin"
 )
 
+type RouteMetadata struct {
+    Method       string
+    Path         string
+    Description  string
+    Handler      gin.HandlerFunc
+    RequiresAuth bool
+}
 
-// Setup initializes all the routes for the application.
+var routeDefinitions = []RouteMetadata{
+    {Method: "POST", Path: "/users/login", Description: "Authenticate user and provide tokens", Handler: LoginHandler, RequiresAuth: false},
+    {Method: "POST", Path: "/users/register", Description: "Register a new user", Handler: RegisterUserHandler, RequiresAuth: false},
+    {Method: "GET", Path: "/users/", Description: "Retrieve all users", Handler: GetAllUsers, RequiresAuth: true},
+    {Method: "GET", Path: "/users/id/:_id", Description: "Retrieve a user by their ID", Handler: GetUserByID, RequiresAuth: true},
+    {Method: "DELETE", Path: "/users/id/:_id", Description: "Delete a user by their ID", Handler: DeleteUserHandler, RequiresAuth: true},
+    {Method: "PUT", Path: "/users/id/:_id", Description: "Update a user by their ID", Handler: UpdateUserHandler, RequiresAuth: true},
+    {Method: "GET", Path: "/holdings/", Description: "Retrieve all holdings", Handler: GetAllHoldingsHandler, RequiresAuth: true},
+    {Method: "POST", Path: "/holdings/", Description: "Add a new holding", Handler: AddHoldingsHandler, RequiresAuth: true},
+    {Method: "GET", Path: "/holdings/id/:_id", Description: "Retrieve a holding by its ID", Handler: GetHoldingByIDHandler, RequiresAuth: true},
+    {Method: "DELETE", Path: "/holdings/id/:_id", Description: "Delete a holding by its ID", Handler: DeleteHoldingHandler, RequiresAuth: true},
+    {Method: "PUT", Path: "/holdings/id/:_id", Description: "Update a holding by its ID", Handler: UpdateHoldingHandler, RequiresAuth: true},
+    {Method: "GET", Path: "/holdings/ticker/:ticker", Description: "Retrieve holdings by ticker", Handler: GetHoldingsByTickerHandler, RequiresAuth: true},
+    {Method: "GET", Path: "/holdings/account/:account", Description: "Retrieve holdings by account", Handler: GetHoldingsByAccountHandler, RequiresAuth: true},
+}
+
+func GetRoutes() []RouteMetadata {
+    return routeDefinitions
+}
 
 func Setup(router *gin.Engine) {
-	// Load HTML templates
-	router.LoadHTMLGlob("./templates/*.tmpl")
+    // Load HTML templates
+    router.LoadHTMLGlob("./templates/*.tmpl")
 
-	// Serve static files using dynamically determined base path
-	staticBasePath := config.GetBasePath()
-	router.Static("/css", staticBasePath + "/css")
-	router.Static("/js", staticBasePath + "/js")
-	router.Static("/images", staticBasePath + "/images")
+    // Serve static files using dynamically determined base path
+    staticBasePath := config.GetBasePath()
+    router.Static("/css", staticBasePath + "/css")
+    router.Static("/js", staticBasePath + "/js")
+    router.Static("/images", staticBasePath + "/images")
 
-
-    // User routes
-	router.POST("/users/login", LoginHandler)
-    router.POST("/users/register", RegisterUserHandler)
-
-	router.GET("/users/", auth.AuthMiddleware(), GetAllUsers)
-	router.GET("/users/id/:_id", auth.AuthMiddleware(), GetUserByID)
-    router.DELETE("/users/id/:_id", auth.AuthMiddleware(), DeleteUserHandler)
-    router.PUT("/users/id/:_id", UpdateUserHandler)
-
-	// Holdings routes
-	router.GET("/holdings/", auth.AuthMiddleware(), GetAllHoldingsHandler)
-    router.POST("/holdings/", auth.AuthMiddleware(), AddHoldingsHandler)
-    router.GET("/holdings/id/:_id", auth.AuthMiddleware(), GetHoldingByIDHandler)
-    router.DELETE("/holdings/id/:_id", auth.AuthMiddleware(), DeleteHoldingHandler)
-    router.PUT("/holdings/id/:_id", auth.AuthMiddleware(), UpdateHoldingHandler)
-	router.GET("/holdings/ticker/:ticker", auth.AuthMiddleware(), GetHoldingsByTickerHandler)
-	router.GET("/holdings/account/:account", auth.AuthMiddleware(), GetHoldingsByAccountHandler)
-
-	// Serve the dynamically generated HTML index page at the root
-	router.GET("/", func(c *gin.Context) {
-        allRoutes := router.Routes()
-        var apiRoutes []gin.RouteInfo
-    
-        staticPrefixes := []string{"/css", "/js", "/images"} // static paths
-    
-        for _, route := range allRoutes {
-            includeRoute := true
-            for _, prefix := range staticPrefixes {
-                if strings.HasPrefix(route.Path, prefix) {
-                    includeRoute = false
-                    break
-                }
-            }
-            if includeRoute {
-                apiRoutes = append(apiRoutes, route)
-            }
+    // Define routes dynamically based on routeDefinitions
+    for _, route := range routeDefinitions {
+        if route.RequiresAuth {
+            router.Handle(route.Method, route.Path, auth.AuthMiddleware(), route.Handler)
+        } else {
+            router.Handle(route.Method, route.Path, route.Handler)
         }
-    
+    }
+
+    // Serve the dynamically generated HTML index page at the root
+    router.GET("/", func(c *gin.Context) {
         c.HTML(http.StatusOK, "index.tmpl", gin.H{
-            "Routes": apiRoutes,
+            "Routes": routeDefinitions,
         })
-	})
+    })
 }

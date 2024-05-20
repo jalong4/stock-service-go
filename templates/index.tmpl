@@ -11,7 +11,6 @@
         <h1>Stock Service</h1>
         <p>Powering the StockViewer App</p>
     </header>
-
     <main>
         <section>
             <h2>About This Service</h2>
@@ -21,7 +20,9 @@
             <h2>API Routes</h2>
             <ul>
                 {{range .Routes}}
-                <li><strong>{{.Method}}:</strong> {{.Path}}</li>
+                <li>
+                    <strong>{{.Method}}</strong> <code>{{.Path}}</code> - {{.Description}}{{if .RequiresAuth}} (Requires Auth){{end}}
+                </li>
                 {{end}}
             </ul>
         </section>
