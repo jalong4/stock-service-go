@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Service</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Stock Service</h1>
+        <p>Powering the StockViewer App</p>
+    </header>
+
+    <main>
+        <section>
+            <h2>About This Service</h2>
+            <p>This application provides a comprehensive set of tools for managing your financial portfolios, tracking stock performance, and more.</p>
+        </section>
+        <section>
+            <h2>API Routes</h2>
+            <ul>
+                {{range .Routes}}
+                <li><strong>{{.Method}}:</strong> {{.Path}}</li>
+                {{end}}
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Long Software Inc. All rights reserved.</p>
+    </footer>
+    <script src="js/script.js"></script>
+</body>
+</html>

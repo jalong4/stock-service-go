@@ -1,0 +1,29 @@
+
+# Exclude environment variables file which may contain sensitive data
+./config/config.env
+
+
+# Go specific files
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go dependency directories
+vendor/
+Gopkg.lock
+go.sum
+
+# Go workspace files
+.golangci.yml
+
+
+# VS Code directory
+.vscode/
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
